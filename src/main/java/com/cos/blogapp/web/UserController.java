@@ -21,6 +21,7 @@ import com.cos.blogapp.domain.board.Board;
 import com.cos.blogapp.domain.user.User;
 import com.cos.blogapp.domain.user.UserRepository;
 import com.cos.blogapp.handler.ex.MyAsyncNotFoundException;
+import com.cos.blogapp.service.UserService;
 import com.cos.blogapp.util.MyAlgorithm;
 import com.cos.blogapp.util.SHA;
 import com.cos.blogapp.util.Script;
@@ -35,9 +36,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Controller
 public class UserController {
-
-	private final UserRepository userRepository;
+	
 	private final HttpSession session;
+	private final UserService userService;
 
 	@PutMapping("/user/{id}")
 	public @ResponseBody CMRespDto<String> update(@PathVariable int id, @Valid @RequestBody UserSaveReqDto dto,
@@ -65,11 +66,10 @@ public class UserController {
 			throw new MyAsyncNotFoundException("해당글을 삭제할 권한이 없습니다.");
 		}
 		
-		//핵심로직
-		principal.setEmail(dto.getEmail());
+		
+		userService.유저정보수정(dto, principal);
+		
 		session.setAttribute("principal", principal);
-
-		userRepository.save(principal);
 		
 		return new CMRespDto<>(1, "업데이트 성공", null);
 	}
@@ -120,8 +120,8 @@ public class UserController {
 		System.out.println(dto.getPassword());
 		// 2. DB -> 조회
 
-		String encPassword = SHA.encrypt(dto.getPassword(), MyAlgorithm.SHA256);
-		User userEntity = userRepository.mLogin(dto.getUsername(), encPassword);
+		
+		User userEntity = userService.로그인(dto);
 
 		if (userEntity == null) {
 			return "redirect:/loginForm";
@@ -152,11 +152,8 @@ public class UserController {
 			return Script.back(errorMap.toString());
 		}
 
-		// 프로그램은 누구나싫수할수있다. 실수하지 않게 만들어줘야한다.
-		String encPassword = SHA.encrypt(dto.getPassword(), MyAlgorithm.SHA256);
-		dto.setPassword(encPassword);
-
-		userRepository.save(dto.toEntity());
+		userService.회원가입(dto);
+		
 		return Script.href("/loginForm"); // 리다이렉션 (300)
 	}
 

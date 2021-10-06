@@ -69,6 +69,8 @@ public class UserController {
 		
 		userService.유저정보수정(dto, principal);
 		
+		//세션 동기화
+		principal.setEmail(dto.getEmail());
 		session.setAttribute("principal", principal);
 		
 		return new CMRespDto<>(1, "업데이트 성공", null);

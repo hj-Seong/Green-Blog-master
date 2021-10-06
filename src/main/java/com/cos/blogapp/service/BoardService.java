@@ -46,9 +46,11 @@ public class BoardService {
 		comment.setUser(principal);
 		comment.setBoard(boardEntity);
 
+
 		// 4. Save하기
 		commentRepository.save(comment);
 		// 이 전체가 트렌젹션 - 서비스
+		// 더티체킹으로 바꿀수 있다.
 	}
 
 	@Transactional(rollbackFor = MyAsyncNotFoundException.class)
@@ -60,13 +62,10 @@ public class BoardService {
 			throw new MyAsyncNotFoundException("해당글을 삭제할 권한이 없습니다.");
 		}
 
-		// 핵심기능
-		// User principal = (User) session.getAttribute("principal");
-		Board board = dto.toEntity(principal);
-		board.setId(id);// update의 핵심
-
-		boardRepository.save(board);
-	}
+		// 영속화된 데이터를 변경하면!!
+		boardEntity.setTitle(dto.getTitle());
+		boardEntity.setContent(dto.getContent());
+	} // 트랜젝션종료 (더티체킹)
 
 	public Board 게시글수정페이지이동(int id) {
 		Board boardEntity = boardRepository.findById(id)

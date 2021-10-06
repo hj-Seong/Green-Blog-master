@@ -27,10 +27,11 @@ public class UserService {
 	@Transactional(rollbackFor = MyAsyncNotFoundException.class)
 	public void 유저정보수정(UserSaveReqDto dto, User principal) {
 		// 핵심로직
-		principal.setEmail(dto.getEmail());
-
-		userRepository.save(principal);
-		//글로벌 익셉션에 던진다.
+		User userEntity = userRepository.findById(principal.getId())
+				.orElseThrow(()->new MyAsyncNotFoundException("회원정보를 찾을수 없습니다."));
+			
+		userEntity.setEmail(dto.getEmail());
+		//더티체킹
 	}
 
 	public User 로그인(LoginReqDto dto) {

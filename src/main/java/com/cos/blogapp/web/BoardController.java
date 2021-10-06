@@ -121,8 +121,9 @@ public class BoardController {
 		// select * from board where id = :id *프라이머리키
 		// 지원안해주면 직접적어야한다.
 
+		//Board 객체에 존재하는 것(Board(o), User(o), List<Comment>(x) )
 		model.addAttribute("boardEntity", boardService.게시글상세보기(id));
-		return "board/detail";
+		return "board/detail"; //ViewResolver
 
 	}
 
